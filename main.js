@@ -1,16 +1,14 @@
 var windowSize = { x: 480, y: 800 };
 var game = new Phaser.Game(windowSize.x, windowSize.y, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 var bg;
-var enemyState = {
-  counter: 0,
-  state: "track"
-};
 var gameState = 'play';
 
 var enemyY = 100;
 var playerY = 700;
 var player;
 var enemy;
+var enemyText = null;
+var playerText = null;
 
 // Groups
 // Create them ourselves because we need to control the Z order
@@ -56,6 +54,8 @@ function create () {
   // Add players
   enemy = NewShip(game, groups.enemy, groups.enemyBullets, windowSize.x / 2, enemyY, -1);
   player = NewShip(game, groups.player, groups.playerBullets, windowSize.x / 2, playerY, 1);
+  enemy.otherShip = player;
+  player.otherShip = enemy;
   
   splash = null;
 }
@@ -85,4 +85,27 @@ function update() {
 function bulletHit(ship, bullet) {
   ship.damage(1);
   bullet.kill();
+  
+  // Check victory conditions
+  if (!player.alive || !enemy.alive) {
+    gameState = 'end';
+  
+    var winStyle = { font: "48px Arial", fill: "#00ff44", align: "center" };
+    var loseStyle = { font: "48px Arial", fill: "#ff0044", align: "center" };
+    var winText = "A winner!";
+    var loseText = "Pleased to try again";
+
+    // Make remaining player invincible
+    if (player.alive) {
+      player.health = 100;
+      playerText = game.add.text(game.world.centerX, playerY, winText, winStyle);
+      enemyText = game.add.text(game.world.centerX, enemyY, loseText, loseStyle);
+    } else if (enemy.alive) {
+      enemy.health = 100;
+      playerText = game.add.text(game.world.centerX, playerY, loseText, loseStyle);
+      enemyText = game.add.text(game.world.centerX, enemyY, winText, winStyle);
+    }
+    playerText.anchor.x = 0.5;
+    enemyText.anchor.x = 0.5;
+  }
 }
