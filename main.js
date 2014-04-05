@@ -11,7 +11,6 @@ var enemyY = 100;
 var playerY = 700;
 var player;
 var enemy;
-var speedBase = 7;
 
 // Groups
 // Create them ourselves because we need to control the Z order
@@ -53,10 +52,8 @@ function create () {
   game.world.setBounds(0, 0, windowSize.x, windowSize.y);
 
   // Add players
-  enemy = game.add.sprite(windowSize.x / 2, enemyY, 'block');
-  groups.enemy.add(enemy);
-  player = game.add.sprite(windowSize.x / 2, playerY, 'block');
-  groups.player.add(player);
+  enemy = NewShip(game, groups.enemy, windowSize.x / 2, enemyY);
+  player = NewShip(game, groups.player, windowSize.x / 2, playerY);
   
   splash = null;
 }
@@ -65,9 +62,15 @@ function update() {
   if (gameState === 'play') {
     // move player
     if (cursors.right.isDown) {
-      player.x += speedBase;
+      player.moveRight();
     } else if (cursors.left.isDown) {
-      player.x -= speedBase;
+      player.moveLeft();
+    }
+    // move enemy
+    if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
+      enemy.moveLeft();
+    } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
+      enemy.moveRight();
     }
   } else if (gameState === 'end') {
   }
