@@ -1,7 +1,7 @@
 function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   group.x = x;
   group.y = y;
-  var ship = NewShipPart(game, group, null, new Shot(game, group, bulletGroup, yscale), 0, 0, yscale);
+  var ship = NewShipPart(game, group, null, new Shot(game, group, bulletGroup, yscale, 1.5), 0, 0, yscale);
   // Add more ship parts
   var i;
   // Track left/right bounds
@@ -9,8 +9,8 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   group.maxDx = 0;
   var childLeft = ship;
   var childRight = ship;
-  for (i = 1; i < 3; i++) {
-    var shot = new Shot(game, group, bulletGroup, yscale);
+  for (i = 1; i < 5; i++) {
+    var shot = new Shot(game, group, bulletGroup, yscale, 1.3 / Math.sqrt(i));
     childLeft = NewShipPart(game, group, childLeft, shot, -ship.width * i, 0, yscale);
     childRight = NewShipPart(game, group, childRight, shot.clone(), ship.width * i, 0, yscale);
     group.minDx = Math.min(group.minDx, -ship.width * (i + 0.5));
@@ -143,21 +143,21 @@ function NewShipPart(game, group, parent, shot, x, y, yscale) {
   return part;
 }
 
-var Shot = function(game, group, bulletGroup, yscale) {
+var Shot = function(game, group, bulletGroup, yscale, powerScale) {
   var shot = game.add.audio('shot');
   // Randomly generate a set of gun locks
-  var burstSize = Math.floor(Math.random() * 5) + 1;
-  var burstLock = Math.floor(Math.random() * 10) + 4;
-  var burstEndLock = Math.floor(Math.random() * 30) + 5 + burstLock;
+  var burstSize = Math.floor(Math.random() * 2 * powerScale) + 1;
+  var burstLock = Math.floor((Math.random() * 20 + 4) / powerScale);
+  var burstEndLock = Math.floor((Math.random() * 60 + 5 + burstLock) / powerScale);
   this.gunLocks = [];
   for (; burstSize > 0; burstSize--) {
     this.gunLocks.push(burstLock);
   }
   this.gunLocks.push(burstEndLock);
-  this.gunLock = Math.random() * 50;
+  this.gunLock = Math.random() * 50 + 60;
   this.gunLockIndex = 0;
-  this.shotSpeed = Math.random() * 300 + 500;
-  this.spreadCount = Math.random() * 4 + 1;
+  this.shotSpeed = (Math.random() * 150 + 250) * powerScale;
+  this.spreadCount = Math.floor(Math.random() * 2 * powerScale + 1);
   this.spreadWidth = Math.random() * 10 + 5;
   this.shoot = function(part) {
     this.gunLock--;
@@ -181,7 +181,7 @@ var Shot = function(game, group, bulletGroup, yscale) {
   };
   
   this.clone = function() {
-    var newShot = new Shot(game, group, bulletGroup, yscale);
+    var newShot = new Shot(game, group, bulletGroup, yscale, powerScale);
     newShot.gunLocks = this.gunLocks;
     newShot.gunLock = this.gunLock;
     newShot.shotSpeed = this.shotSpeed;
@@ -193,11 +193,13 @@ function NewBullet(game, x, y, yscale, angle, speed) {
   var bullet = game.add.sprite(x, y, yscale < 0 ? 'bullet1' : 'bullet');
   bullet.anchor.x = 0.5;
   bullet.anchor.y = 0.5;
-  bullet.lifespan = 2000;
+  bullet.body.width = 5;
+  bullet.body.height = 12;
+  bullet.lifespan = 5000;
   bullet.checkWorldBounds = true;
   bullet.outOfBoundsKill = true;
   bullet.angle = angle;
-  var rawSpeed = yscale * speed * (1 + game.time.time / 100000);
+  var rawSpeed = yscale * speed * (1 + (game.time.time - game.time.start) / 100000);
   bullet.body.velocity.x = Math.sin(bullet.rotation) * rawSpeed;
   bullet.body.velocity.y = Math.cos(bullet.rotation) * -1 * rawSpeed;
   return bullet;

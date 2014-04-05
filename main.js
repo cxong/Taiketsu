@@ -61,6 +61,7 @@ function create () {
 
 function reset() {
   gameState = 'play';
+  game.time.start = game.time.time;
   
   // Add players
   groups.enemy.removeAll();
@@ -95,8 +96,11 @@ function update() {
     }
     
     // Collision
-    game.physics.overlap(groups.enemy, groups.playerBullets, bulletHit);
-    game.physics.overlap(groups.player, groups.enemyBullets, bulletHit);
+    console.log(game.time.time - game.time.start);
+    if (game.time.time - game.time.start > 1000) {
+      game.physics.overlap(groups.enemy, groups.playerBullets, bulletHit);
+      game.physics.overlap(groups.player, groups.enemyBullets, bulletHit);
+    }
     
     groups.player.fireAndAI();
     groups.enemy.fireAndAI();
