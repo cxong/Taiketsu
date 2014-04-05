@@ -2,11 +2,12 @@ var windowSize = { x: 480, y: 800 };
 var game = new Phaser.Game(windowSize.x, windowSize.y, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 var bg;
 var gameState = 'play';
+var stateCounter = 0;
 
 var enemyY = 100;
 var playerY = 700;
-var player;
-var enemy;
+var player = null;
+var enemy = null;
 var enemyText = null;
 var playerText = null;
 
@@ -50,14 +51,34 @@ function create () {
   };
  
   game.world.setBounds(0, 0, windowSize.x, windowSize.y);
+  
+  reset();
+  
+  splash = null;
+}
 
+function reset() {
+  gameState = 'play';
+  
   // Add players
+  if (enemy !== null) {
+    enemy.destroy(true);
+  }
   enemy = NewShip(game, groups.enemy, groups.enemyBullets, windowSize.x / 2, enemyY, -1);
+  if (player !== null) {
+    player.destroy(true);
+  }
   player = NewShip(game, groups.player, groups.playerBullets, windowSize.x / 2, playerY, 1);
   enemy.otherShip = player;
   player.otherShip = enemy;
   
-  splash = null;
+  // Remove text
+  if (playerText !== null) {
+    playerText.destroy(true);
+  }
+  if (enemyText !== null) {
+    enemyText.destroy(true);
+  }
 }
 
 function update() {
@@ -79,6 +100,15 @@ function update() {
     game.physics.overlap(groups.enemy, groups.playerBullets, bulletHit);
     game.physics.overlap(groups.player, groups.enemyBullets, bulletHit);
   } else if (gameState === 'end') {
+    stateCounter--;
+    if (stateCounter <= 0) {
+      if (game.input.keyboard.isDown(Phaser.Keyboard.A) ||
+          game.input.keyboard.isDown(Phaser.Keyboard.D) ||
+          cursors.right.isDown ||
+          cursors.left.isDown) {
+        reset();
+      }
+    }
   }
 }
 
@@ -89,6 +119,7 @@ function bulletHit(ship, bullet) {
   // Check victory conditions
   if (!player.alive || !enemy.alive) {
     gameState = 'end';
+    stateCounter = 60;
   
     var winStyle = { font: "48px Arial", fill: "#00ff44", align: "center" };
     var loseStyle = { font: "48px Arial", fill: "#ff0044", align: "center" };
