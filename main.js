@@ -22,8 +22,10 @@ var cursors;
 
 
 function preload () {
-  //game.load.image('bgimage', 'images/bg.jpg');
+  game.load.image('bgimage', 'images/bg.jpg');
   game.load.image('block', 'images/block.png');
+  game.load.image('bullet', 'images/bullet.png');
+  game.load.image('bullet1', 'images/bullet1.png');
   
   //game.load.audio('bgaudio', 'audio/bg.mp3');
   
@@ -37,7 +39,7 @@ function preload () {
 function create () {
   game.stage.backgroundColor = '0x000022';
 
-  //bg = game.add.sprite(0, statusHeight, 'bgimage');
+  bg = game.add.sprite(0, 0, 'bgimage');
   
   //music = game.add.audio('bgaudio');
   //music.play('', 0, 0.3, true);
@@ -52,8 +54,8 @@ function create () {
   game.world.setBounds(0, 0, windowSize.x, windowSize.y);
 
   // Add players
-  enemy = NewShip(game, groups.enemy, windowSize.x / 2, enemyY);
-  player = NewShip(game, groups.player, windowSize.x / 2, playerY);
+  enemy = NewShip(game, groups.enemy, groups.enemyBullets, windowSize.x / 2, enemyY, -1);
+  player = NewShip(game, groups.player, groups.playerBullets, windowSize.x / 2, playerY, 1);
   
   splash = null;
 }
