@@ -24,6 +24,7 @@ function preload () {
   game.load.spritesheet('block', 'images/block.png', 32, 32);
   game.load.image('bullet', 'images/bullet.png');
   game.load.image('bullet1', 'images/bullet1.png');
+  game.load.spritesheet('explosion', 'images/explosion.png', 34, 34);
   
   //game.load.audio('bgaudio', 'audio/bg.mp3');
   
@@ -148,6 +149,17 @@ function bulletHit(ship, bullet) {
 function killPart(part) {
   part.kill();
   explodeSound.play();
+  for (var i = 0; i < 5; i++) {
+    var explode = game.add.sprite(
+      part.x + part.group.x, part.y + part.group.y, 'explosion');
+    explode.anchor.x = 0.5;
+    explode.anchor.y = 0.5;
+    explode.body.velocity.x = (Math.random() - 0.5)*part.width*3;
+    explode.body.velocity.y = (Math.random() - 0.5)*part.width*3;
+    var anim = explode.animations.add('play');
+    anim.killOnComplete = true;
+    anim.play(Math.random()*10 + 10);
+  }
   if (part.childPart !== null && part.childPart.alive) {
     killPart(part.childPart);
   }
