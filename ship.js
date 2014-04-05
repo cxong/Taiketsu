@@ -157,14 +157,21 @@ var Shot = function(game, group, bulletGroup, yscale) {
   this.gunLock = Math.random() * 50;
   this.gunLockIndex = 0;
   this.shotSpeed = Math.random() * 300 + 500;
+  this.spreadCount = Math.random() * 4 + 1;
+  this.spreadWidth = Math.random() * 10 + 5;
   this.shoot = function(part) {
     this.gunLock--;
     if (this.gunLock <= 0) {
       shot.play();
-      bulletGroup.add(NewBullet(game,
-                                part.x + group.x,
-                                part.y + group.y - part.height / 2,
-                                yscale, this.shotSpeed));
+      var spreadStartAngle = -(this.spreadCount - 1) * this.spreadWidth / 2;
+      var i;
+      for (i = 0; i < this.spreadCount; i++) {
+        var angle = spreadStartAngle + i * this.spreadWidth;
+        bulletGroup.add(NewBullet(game,
+                                  part.x + group.x,
+                                  part.y + group.y - part.height / 2,
+                                  yscale, angle, this.shotSpeed));
+      }
       this.gunLock = this.gunLocks[this.gunLockIndex];
       this.gunLockIndex++;
       if (this.gunLockIndex >= this.gunLocks.length) {
@@ -182,13 +189,16 @@ var Shot = function(game, group, bulletGroup, yscale) {
   };
 };
 
-function NewBullet(game, x, y, yscale, speed) {
+function NewBullet(game, x, y, yscale, angle, speed) {
   var bullet = game.add.sprite(x, y, yscale < 0 ? 'bullet1' : 'bullet');
   bullet.anchor.x = 0.5;
   bullet.anchor.y = 0.5;
   bullet.lifespan = 2000;
   bullet.checkWorldBounds = true;
   bullet.outOfBoundsKill = true;
-  bullet.body.velocity.y = yscale * -1 * speed * (1 + game.time.time / 100000);
+  bullet.angle = angle;
+  var rawSpeed = yscale * speed * (1 + game.time.time / 100000);
+  bullet.body.velocity.x = Math.sin(bullet.rotation) * rawSpeed;
+  bullet.body.velocity.y = Math.cos(bullet.rotation) * -1 * rawSpeed;
   return bullet;
 }
