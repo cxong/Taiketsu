@@ -114,7 +114,15 @@ function NewShipPart(game, group, parent, bulletGroup, x, y, yscale) {
   
   // Firing
   var shot = game.add.audio('shot');
-  var gunLocks = [ 5, 5, 15 ];
+  // Randomly generate a set of gun locks
+  var burstSize = Math.floor(Math.random() * 5) + 1;
+  var burstLock = Math.floor(Math.random() * 10) + 4;
+  var burstEndLock = Math.floor(Math.random() * 30) + 5 + burstLock;
+  part.gunLocks = [];
+  for (; burstSize > 0; burstSize--) {
+    part.gunLocks.push(burstLock);
+  }
+  part.gunLocks.push(burstEndLock);
   part.gunLock = Math.random() * 50;
   part.gunLockIndex = 0;
   
@@ -136,9 +144,9 @@ function NewShipPart(game, group, parent, bulletGroup, x, y, yscale) {
       // auto-fire
       shot.play();
       bulletGroup.add(NewBullet(game, this.x + group.x, this.y + group.y, yscale));
-      this.gunLock = gunLocks[this.gunLockIndex];
+      this.gunLock = this.gunLocks[this.gunLockIndex];
       this.gunLockIndex++;
-      if (this.gunLockIndex >= gunLocks.length) {
+      if (this.gunLockIndex >= this.gunLocks.length) {
         this.gunLockIndex = 0;
       }
     }
