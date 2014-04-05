@@ -74,6 +74,15 @@ function update() {
     } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
       enemy.moveRight();
     }
+    
+    // Collision
+    game.physics.overlap(groups.enemy, groups.playerBullets, bulletHit);
+    game.physics.overlap(groups.player, groups.enemyBullets, bulletHit);
   } else if (gameState === 'end') {
   }
+}
+
+function bulletHit(ship, bullet) {
+  ship.damage(1);
+  bullet.kill();
 }

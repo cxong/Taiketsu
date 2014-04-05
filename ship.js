@@ -3,12 +3,19 @@ function NewShip(game, group, bulletGroup, x, y, yscale) {
   ship.anchor.x = 0.5;
   ship.anchor.y = 0.5;
   ship.height *= yscale;
+  ship.health = 10;
   group.add(ship);
   var speedBase = 4;
   ship.moveLeft = function() {
+    if (this.x - this.width / 2 < 0) {
+      return;
+    }
     this.x -= speedBase;
   };
   ship.moveRight = function() {
+    if (this.x + this.width / 2 > game.world.bounds.width) {
+      return;
+    }
     this.x += speedBase;
   };
   
@@ -16,6 +23,9 @@ function NewShip(game, group, bulletGroup, x, y, yscale) {
   var gunLockMax = 10;
   ship.gunLock = 0;
   ship.update = function() {
+    if (!this.alive) {
+      return;
+    }
     this.gunLock--;
     if (this.gunLock <= 0) {
       // auto-fire
