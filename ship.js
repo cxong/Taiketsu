@@ -1,7 +1,7 @@
 function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   group.x = x;
   group.y = y;
-  var ship = NewShipPart(game, group, null, bulletGroup, 0, 0, yscale);
+  var ship = NewShipPart(game, group, null, new Shot(game, group, bulletGroup, yscale), 0, 0, yscale);
   // Add more ship parts
   var i;
   // Track left/right bounds
@@ -10,8 +10,9 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   var childLeft = ship;
   var childRight = ship;
   for (i = 1; i < 3; i++) {
-    childLeft = NewShipPart(game, group, childLeft, bulletGroup, -ship.width * i, 0, yscale);
-    childRight = NewShipPart(game, group, childRight, bulletGroup, ship.width * i, 0, yscale);
+    var shot = new Shot(game, group, bulletGroup, yscale);
+    childLeft = NewShipPart(game, group, childLeft, shot, -ship.width * i, 0, yscale);
+    childRight = NewShipPart(game, group, childRight, shot.clone(), ship.width * i, 0, yscale);
     group.minDx = Math.min(group.minDx, -ship.width * (i + 0.5));
     group.maxDx = Math.max(group.maxDx, ship.width * (i + 0.5));
   }
@@ -90,7 +91,7 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   };
 }
 
-function NewShipPart(game, group, parent, bulletGroup, x, y, yscale) {
+function NewShipPart(game, group, parent, shot, x, y, yscale) {
   var part = game.add.sprite(x, y, 'block');
   part.anchor.x = 0.5;
   part.anchor.y = 0.5;
@@ -113,19 +114,8 @@ function NewShipPart(game, group, parent, bulletGroup, x, y, yscale) {
   part.addHealth(10);
   
   // Firing
-  var shot = game.add.audio('shot');
-  // Randomly generate a set of gun locks
-  var burstSize = Math.floor(Math.random() * 5) + 1;
-  var burstLock = Math.floor(Math.random() * 10) + 4;
-  var burstEndLock = Math.floor(Math.random() * 30) + 5 + burstLock;
-  part.gunLocks = [];
-  for (; burstSize > 0; burstSize--) {
-    part.gunLocks.push(burstLock);
-  }
-  part.gunLocks.push(burstEndLock);
-  part.gunLock = Math.random() * 50;
-  part.gunLockIndex = 0;
-  
+  part.shot = shot;
+
   // being hit
   var hit = game.add.audio('hit');
   part.hitCount = 0;
@@ -139,17 +129,7 @@ function NewShipPart(game, group, parent, bulletGroup, x, y, yscale) {
     if (!this.alive) {
       return;
     }
-    this.gunLock--;
-    if (this.gunLock <= 0) {
-      // auto-fire
-      shot.play();
-      bulletGroup.add(NewBullet(game, this.x + group.x, this.y + group.y, yscale));
-      this.gunLock = this.gunLocks[this.gunLockIndex];
-      this.gunLockIndex++;
-      if (this.gunLockIndex >= this.gunLocks.length) {
-        this.gunLockIndex = 0;
-      }
-    }
+    this.shot.shoot(this);
     
     if (this.hitCount > 0) {
       this.hitCount--;
@@ -163,12 +143,52 @@ function NewShipPart(game, group, parent, bulletGroup, x, y, yscale) {
   return part;
 }
 
-function NewBullet(game, x, y, yscale) {
+var Shot = function(game, group, bulletGroup, yscale) {
+  var shot = game.add.audio('shot');
+  // Randomly generate a set of gun locks
+  var burstSize = Math.floor(Math.random() * 5) + 1;
+  var burstLock = Math.floor(Math.random() * 10) + 4;
+  var burstEndLock = Math.floor(Math.random() * 30) + 5 + burstLock;
+  this.gunLocks = [];
+  for (; burstSize > 0; burstSize--) {
+    this.gunLocks.push(burstLock);
+  }
+  this.gunLocks.push(burstEndLock);
+  this.gunLock = Math.random() * 50;
+  this.gunLockIndex = 0;
+  this.shotSpeed = Math.random() * 300 + 500;
+  this.shoot = function(part) {
+    this.gunLock--;
+    if (this.gunLock <= 0) {
+      shot.play();
+      bulletGroup.add(NewBullet(game,
+                                part.x + group.x,
+                                part.y + group.y - part.height / 2,
+                                yscale, this.shotSpeed));
+      this.gunLock = this.gunLocks[this.gunLockIndex];
+      this.gunLockIndex++;
+      if (this.gunLockIndex >= this.gunLocks.length) {
+        this.gunLockIndex = 0;
+      }
+    }
+  };
+  
+  this.clone = function() {
+    var newShot = new Shot(game, group, bulletGroup, yscale);
+    newShot.gunLocks = this.gunLocks;
+    newShot.gunLock = this.gunLock;
+    newShot.shotSpeed = this.shotSpeed;
+    return newShot;
+  };
+};
+
+function NewBullet(game, x, y, yscale, speed) {
   var bullet = game.add.sprite(x, y, yscale < 0 ? 'bullet1' : 'bullet');
   bullet.anchor.x = 0.5;
   bullet.anchor.y = 0.5;
+  bullet.lifespan = 2000;
   bullet.checkWorldBounds = true;
   bullet.outOfBoundsKill = true;
-  bullet.body.velocity.y = yscale * -1 * 800;
+  bullet.body.velocity.y = yscale * -1 * speed * (1 + game.time.time / 100000);
   return bullet;
 }

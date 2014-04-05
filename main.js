@@ -88,9 +88,9 @@ function update() {
     }
     // move enemy
     if (game.input.keyboard.isDown(Phaser.Keyboard.A)) {
-      enemy.moveLeft();
+      groups.enemy.moveLeft();
     } else if (game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-      enemy.moveRight();
+      groups.enemy.moveRight();
     }
     
     // Collision
