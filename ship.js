@@ -1,53 +1,52 @@
 function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
-  var ship = game.add.sprite(x, y, 'block');
-  ship.anchor.x = 0.5;
-  ship.anchor.y = 0.5;
-  ship.height *= yscale;
-  ship.health = 10;
-  group.add(ship);
-  var speedBase = 4;
-  ship.move = function(dir, resetAI) {
+  group.x = x;
+  group.y = y;
+  var ship = NewShipPart(game, group, null, bulletGroup, 0, 0, yscale);
+  // Add more ship parts
+  var i;
+  // Track left/right bounds
+  group.minDx = 0;
+  group.maxDx = 0;
+  var childLeft = ship;
+  var childRight = ship;
+  for (i = 1; i < 3; i++) {
+    childLeft = NewShipPart(game, group, childLeft, bulletGroup, -ship.width * i, 0, yscale);
+    childRight = NewShipPart(game, group, childRight, bulletGroup, ship.width * i, 0, yscale);
+    group.minDx = Math.min(group.minDx, -ship.width * (i + 0.5));
+    group.maxDx = Math.max(group.maxDx, ship.width * (i + 0.5));
+  }
+  
+  var speedBase = 5;
+  group.getSpeed = function() {
+    return speedBase / Math.sqrt(this.countLiving());
+  };
+  group.move = function(dir, resetAI) {
     if (resetAI) {
       this.useAI = false;
       this.useAICounter = 100;
     }
     this.x += dir;
-    this.x = Math.min(Math.max(this.x, this.width / 2),
-                      game.world.bounds.width - this.width / 2);
+    this.x = Math.min(Math.max(this.x, -this.minDx),
+                      game.world.bounds.width - this.maxDx);
   };
-  ship.moveLeft = function() {
-    this.move(-speedBase, true);
+  group.moveLeft = function() {
+    this.move(-this.getSpeed(), true);
   };
-  ship.moveRight = function() {
-    this.move(speedBase, true);
+  group.moveRight = function() {
+    this.move(this.getSpeed(), true);
   };
-  
-  // Firing
-  var gunLocks = [ 5, 5, 15 ];
-  ship.gunLock = 0;
-  ship.gunLockIndex = 0;
-  
+ 
   // Use AI
   // If not controlled by player for a while, auto-engage AI
-  ship.useAI = true;
-  ship.useAICounter = 0;
-  ship.aiCounter = 0;
-  ship.aiState = 'track'; // track: move to aim at player, left/right: move in direction
-  ship.otherShip = null;
+  group.useAI = true;
+  group.useAICounter = 0;
+  group.aiCounter = 0;
+  group.aiState = 'track'; // track: move to aim at player, left/right: move in direction
+  group.otherShip = null;
   
-  ship.update = function() {
-    if (!this.alive) {
+  group.fireAndAI = function() {
+    if (this.countLiving() === 0) {
       return;
-    }
-    this.gunLock--;
-    if (this.gunLock <= 0) {
-      // auto-fire
-      bulletGroup.add(NewBullet(game, this.x, this.y, yscale));
-      this.gunLock = gunLocks[this.gunLockIndex];
-      this.gunLockIndex++;
-      if (this.gunLockIndex >= gunLocks.length) {
-        this.gunLockIndex = 0;
-      }
     }
     
     // Use AI
@@ -56,13 +55,13 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
         // track the other ship
         if (this.otherShip !== null) {
           var xDiff = this.otherShip.x - this.x;
-          xDiff = Math.min(Math.max(xDiff, -speedBase), speedBase);
+          xDiff = Math.min(Math.max(xDiff, -this.getSpeed()), this.getSpeed());
           this.move(xDiff, false);
         }
       } else if (this.aiState == 'left') {
-        this.move(-speedBase, false);
+        this.move(-this.getSpeed(), false);
       } else if (this.aiState == 'right') {
-        this.move(speedBase, false);
+        this.move(this.getSpeed(), false);
       }
       this.aiCounter--;
       if (this.aiCounter <= 0) {
@@ -89,8 +88,71 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
       }
     }
   };
+}
+
+function NewShipPart(game, group, parent, bulletGroup, x, y, yscale) {
+  var part = game.add.sprite(x, y, 'block');
+  part.anchor.x = 0.5;
+  part.anchor.y = 0.5;
+  part.height *= yscale;
+  group.add(part);
   
-  return ship;
+  // Parent/child
+  part.parentPart = parent;
+  part.childPart = null;
+  if (parent !== null) {
+    parent.childPart = part;
+  }
+  // Recursively add health
+  part.addHealth = function(health) {
+    this.health += health;
+    if (this.parentPart !== null) {
+      this.parentPart.addHealth(health);
+    }
+  };
+  part.addHealth(10);
+  
+  // Firing
+  var shot = game.add.audio('shot');
+  var gunLocks = [ 5, 5, 15 ];
+  part.gunLock = Math.random() * 50;
+  part.gunLockIndex = 0;
+  
+  // being hit
+  var hit = game.add.audio('hit');
+  part.hitCount = 0;
+  part.takeHit = function() {
+    hit.play();
+    this.hitCount = 2;
+    this.frame = 1;
+  };
+  
+  part.update = function() {
+    if (!this.alive) {
+      return;
+    }
+    this.gunLock--;
+    if (this.gunLock <= 0) {
+      // auto-fire
+      shot.play();
+      bulletGroup.add(NewBullet(game, this.x + group.x, this.y + group.y, yscale));
+      this.gunLock = gunLocks[this.gunLockIndex];
+      this.gunLockIndex++;
+      if (this.gunLockIndex >= gunLocks.length) {
+        this.gunLockIndex = 0;
+      }
+    }
+    
+    if (this.hitCount > 0) {
+      this.hitCount--;
+      if (this.hitCount === 0) {
+        // switch sprite back
+        this.frame = 0;
+      }
+    }
+  };
+  
+  return part;
 }
 
 function NewBullet(game, x, y, yscale) {
@@ -99,6 +161,6 @@ function NewBullet(game, x, y, yscale) {
   bullet.anchor.y = 0.5;
   bullet.checkWorldBounds = true;
   bullet.outOfBoundsKill = true;
-  bullet.body.velocity.y = yscale * -1 * 600;
+  bullet.body.velocity.y = yscale * -1 * 800;
   return bullet;
 }
