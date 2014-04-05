@@ -96,7 +96,6 @@ function update() {
     }
     
     // Collision
-    console.log(game.time.time - game.time.start);
     if (game.time.time - game.time.start > 1000) {
       game.physics.overlap(groups.enemy, groups.playerBullets, bulletHit);
       game.physics.overlap(groups.player, groups.enemyBullets, bulletHit);
@@ -164,6 +163,13 @@ function killPart(part) {
     anim.killOnComplete = true;
     anim.play(Math.random()*10 + 10);
   }
+  // update group bounds
+  part.group.minDx = 0;
+  part.group.maxDx = 0;
+  part.group.forEachAlive(function(part) {
+    part.group.minDx = Math.min(part.group.minDx, part.x - part.width * 0.5);
+    part.group.maxDx = Math.max(part.group.maxDx, part.x + part.width * 0.5);
+  });
   if (part.childPart !== null && part.childPart.alive) {
     killPart(part.childPart);
   }
