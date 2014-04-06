@@ -1,0 +1,69 @@
+Title:
+    Sci-Fi / Space: Simple bullets
+
+Author:
+    Bonsaiheldin
+
+URL:
+    http://opengameart.org/content/sci-fi-space-simple-bullets
+
+License(s):
+    * CC0 ( http://creativecommons.org/publicdomain/zero/1.0/legalcode )
+
+SPECIAL ATTRIBUTION INSTRUCTIONS:
+    You can attribute to Bonsaiheld | http://bonsaiheld.org. Only if you want.
+
+File(s):
+    * spr_bullet_strip.png
+    * spr_bullet_strip02.png
+    * spr_bullet_strip03.png
+
+----------------------------------------
+
+Title:
+    Explosion Set 1 (M484 Games)
+
+Author:
+    Master484
+
+URL:
+    http://opengameart.org/content/explosion-set-1-m484-games
+
+License(s):
+    * CC0 ( http://creativecommons.org/publicdomain/zero/1.0/legalcode )
+
+File(s):
+    * M484ExplosionSet1.png
+
+----------------------------------------
+
+Title:
+    Space Ship Construction Kit
+
+Author:
+    Skorpio
+
+URL:
+    http://opengameart.org/content/space-ship-construction-kit
+
+License(s):
+    * CC-BY-SA 3.0 ( http://creativecommons.org/licenses/by-sa/3.0/legalcode )
+    * GPL 3.0 ( http://www.gnu.org/licenses/gpl-3.0.html )
+
+File(s):
+    * Spaceship-Parts.zip
+    * Engine_exhaust.zip
+    * Stars-Nebulae.zip
+    * Muzzle_flashes.zip
+    * Alien-Ships.zip
+    * Example_ships.zip
+
+----------------------------------------
+
+Logo calligraphy from:
+http://www.fudewaza.net/english-to-japanese2
+
+----------------------------------------
+
+Sounds by sfxr
+http://www.drpetter.se/project_sfxr.html
