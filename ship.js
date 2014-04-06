@@ -112,6 +112,7 @@ function NewShipPart(game, group, parent, shot, x, y, yscale) {
     }
   };
   part.addHealth(10);
+  part.fullHealth = part.health;
   
   // Firing
   part.shot = shot;
@@ -125,6 +126,9 @@ function NewShipPart(game, group, parent, shot, x, y, yscale) {
     this.frame = 1;
   };
   
+  // Flash to red frame if damaged
+  part.damageCounter = 0;
+  var damageFrameMax = 10;
   part.update = function() {
     if (!this.alive) {
       return;
@@ -136,6 +140,18 @@ function NewShipPart(game, group, parent, shot, x, y, yscale) {
       if (this.hitCount === 0) {
         // switch sprite back
         this.frame = 0;
+      }
+    } else {
+      // Update frame if taking damage
+      var damagePct = (this.fullHealth - this.health) / this.fullHealth;
+      if (damagePct * damageFrameMax > this.damageCounter) {
+        this.frame = 2;
+      } else {
+        this.frame = 0;
+      }
+      this.damageCounter--;
+      if (this.damageCounter <= 0) {
+        this.damageCounter = damageFrameMax;
       }
     }
   };
