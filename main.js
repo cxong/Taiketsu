@@ -29,6 +29,14 @@ function preload () {
   game.load.spritesheet('block4', 'images/block4.png', 22, 31);
   game.load.spritesheet('block5', 'images/block5.png', 10, 20);
   game.load.spritesheet('block6', 'images/block6.png', 26, 44);
+  game.load.spritesheet('cockpita', 'images/cockpita.png', 38, 52);
+  game.load.spritesheet('block0a', 'images/block0a.png', 11, 33);
+  game.load.spritesheet('block1a', 'images/block1a.png', 38, 48);
+  game.load.spritesheet('block2a', 'images/block2a.png', 16, 76);
+  game.load.spritesheet('block3a', 'images/block3a.png', 29, 52);
+  game.load.spritesheet('block4a', 'images/block4a.png', 22, 31);
+  game.load.spritesheet('block5a', 'images/block5a.png', 10, 20);
+  game.load.spritesheet('block6a', 'images/block6a.png', 26, 44);
   game.numBlocks = 7;
   // dictionary of blocks and delta for attachment, plus whether weapons are allowed
   game.blocks = {

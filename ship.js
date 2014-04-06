@@ -3,7 +3,7 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   group.y = y;
   var shot = new Shot(game, group, bulletGroup, yscale, 2.0);
   shot.scaleUpDPS(30);
-  var ship = NewShipPart(game, group, 'cockpit', null, false, shot,
+  var ship = NewShipPart(game, group, 'cockpit' + (yscale < 0 ? 'a' : ''), null, false, shot,
                          0, 0, yscale);
   // Add more ship parts
   var i;
@@ -29,12 +29,12 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
     }
     powerBudget -= shotPower;
     shot = new Shot(game, group, bulletGroup, yscale, shotPower);
-    childLeft = NewShipPart(game, group, spritename, childLeft, true, shot,
+    childLeft = NewShipPart(game, group, spritename + (yscale < 0 ? 'a' : ''), childLeft, true, shot,
                             childLeft.x - childLeft.width / 2,
                             childLeft.y + lastDy, yscale);
     childLeft.x -= childLeft.width / 2;
     childLeft.y += game.blocks[spritename].delta * yscale * -1;
-    childRight = NewShipPart(game, group, spritename, childRight, false, shot.clone(),
+    childRight = NewShipPart(game, group, spritename + (yscale < 0 ? 'a' : ''), childRight, false, shot.clone(),
                              childRight.x + Math.abs(childRight.width) / 2,
                              childRight.y + lastDy, yscale);
     childRight.x += Math.abs(childRight.width) / 2;
@@ -235,7 +235,7 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
     var dps = 0;
     var i;
     for (i = 0; i < this.gunLocks.length; i++) {
-      dps += this.spreadCount / this.gunLocks[i];
+      dps += Math.sqrt(this.spreadCount) / this.gunLocks[i];
     }
     var standardDps = 0.07;
     var dpsScale = dps / standardDps;
