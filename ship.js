@@ -181,7 +181,7 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
   };
   
   this.clone = function() {
-    var newShot = new Shot(game, group, bulletGroup, yscale);
+    var newShot = new Shot(game, group, bulletGroup, yscale, powerScale);
     newShot.gunLocks = this.gunLocks;
     newShot.gunLock = this.gunLock;
     newShot.shotSpeed = this.shotSpeed;
