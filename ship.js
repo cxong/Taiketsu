@@ -154,6 +154,11 @@ function NewShipPart(game, group, name, parent, isLeft, shot, x, y, yscale) {
   
   // Firing
   part.shot = shot;
+  part.flashSprite = game.add.sprite(x, y, 'flash' + Math.floor(Math.random() * game.numFlashes));
+  part.flashSprite.anchor.x = 0.5;
+  part.flashSprite.anchor.y = 1;
+  part.flashSprite.height *= yscale;
+  part.flashSprite.kill();
 
   // being hit
   var hit = game.add.audio('hit');
@@ -171,7 +176,16 @@ function NewShipPart(game, group, name, parent, isLeft, shot, x, y, yscale) {
     if (!this.alive) {
       return;
     }
-    this.shot.shoot(this);
+    if (this.shot.shoot(this)) {
+      if (!this.flashSprite.alive) {
+        this.flashSprite.revive(1);
+        this.flashSprite.lifespan = 100;
+      }
+    }
+    if (this.flashSprite.alive) {
+      this.flashSprite.x = this.x + group.x;
+      this.flashSprite.y = this.y + group.y - this.height / 2;
+    }
     
     if (this.hitCount > 0) {
       this.hitCount--;
@@ -232,7 +246,7 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
   
   this.shoot = function(part) {
     if (powerScale === 0) {
-      return;
+      return false;
     }
     this.gunLock--;
     if (this.gunLock <= 0) {
@@ -251,7 +265,9 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
       if (this.gunLockIndex >= this.gunLocks.length) {
         this.gunLockIndex = 0;
       }
+      return true;
     }
+    return false;
   };
   
   this.scaleUpDPS = function(scale) {

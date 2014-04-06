@@ -43,6 +43,12 @@ function preload () {
   };
   game.load.image('bullet', 'images/bullet.png');
   game.load.image('bullet1', 'images/bullet1.png');
+  // muzzle flashes
+  game.load.image('flash0', 'images/flash0.png');
+  game.load.image('flash1', 'images/flash1.png');
+  game.load.image('flash2', 'images/flash2.png');
+  game.load.image('flash3', 'images/flash3.png');
+  game.numFlashes = 4;
   game.load.spritesheet('explosion', 'images/explosion.png', 34, 34);
   
   //game.load.audio('bgaudio', 'audio/bg.mp3');
