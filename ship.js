@@ -1,21 +1,27 @@
 function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   group.x = x;
   group.y = y;
-  var ship = NewShipPart(game, group, null, new Shot(game, group, bulletGroup, yscale, 1.5), 0, 0, yscale);
+  var ship = NewShipPart(game, group, 'cockpit', null, false, new Shot(game, group, bulletGroup, yscale, 1.5), 0, 0, yscale);
   // Add more ship parts
   var i;
-  // Track left/right bounds
-  group.minDx = 0;
-  group.maxDx = 0;
   var childLeft = ship;
   var childRight = ship;
   for (i = 1; i < 5; i++) {
     var shot = new Shot(game, group, bulletGroup, yscale, 1.3 / Math.sqrt(i));
-    childLeft = NewShipPart(game, group, childLeft, shot, -ship.width * i, 0, yscale);
-    childRight = NewShipPart(game, group, childRight, shot.clone(), ship.width * i, 0, yscale);
-    group.minDx = Math.min(group.minDx, -ship.width * (i + 0.5));
-    group.maxDx = Math.max(group.maxDx, ship.width * (i + 0.5));
+    childLeft = NewShipPart(game, group, 'block', childLeft, true, shot, childLeft.x - childLeft.width / 2, 0, yscale);
+    childLeft.x -= childLeft.width / 2;
+    childRight = NewShipPart(game, group, 'block', childRight, false, shot.clone(), childRight.x + childRight.width / 2, 0, yscale);
+    childRight.x += childRight.width / 2;
+    group.minDx = Math.min(group.minDx, childLeft.x);
+    group.maxDx = Math.max(group.maxDx, childRight.x);
   }
+  // Track left/right bounds
+  group.minDx = 0;
+  group.maxDx = 0;
+  group.forEachAlive(function(part) {
+    group.minDx = Math.min(group.minDx, part.x - part.width * 0.5);
+    group.maxDx = Math.max(group.maxDx, part.x + part.width * 0.5);
+  });
   
   var speedBase = 5;
   group.getSpeed = function() {
@@ -91,8 +97,8 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   };
 }
 
-function NewShipPart(game, group, parent, shot, x, y, yscale) {
-  var part = game.add.sprite(x, y, 'block');
+function NewShipPart(game, group, name, parent, isLeft, shot, x, y, yscale) {
+  var part = game.add.sprite(x, y, name);
   part.anchor.x = 0.5;
   part.anchor.y = 0.5;
   part.height *= yscale;
@@ -100,9 +106,14 @@ function NewShipPart(game, group, parent, shot, x, y, yscale) {
   
   // Parent/child
   part.parentPart = parent;
-  part.childPart = null;
+  part.childLeft = null;
+  part.childRight = null;
   if (parent !== null) {
-    parent.childPart = part;
+    if (isLeft) {
+      parent.childLeft = part;
+    } else {
+      parent.childRight = part;
+    }
   }
   // Recursively add health
   part.addHealth = function(health) {

@@ -21,7 +21,8 @@ var cursors;
 
 function preload () {
   game.load.image('bgimage', 'images/bg.jpg');
-  game.load.spritesheet('block', 'images/block.png', 32, 32);
+  game.load.spritesheet('cockpit', 'images/cockpit.png', 38, 52);
+  game.load.spritesheet('block', 'images/block.png', 11, 33);
   game.load.image('bullet', 'images/bullet.png');
   game.load.image('bullet1', 'images/bullet1.png');
   game.load.spritesheet('explosion', 'images/explosion.png', 34, 34);
@@ -178,7 +179,10 @@ function killPart(part) {
   part.group.forEachAlive(function(p) {
     p.shot.scaleUpDPS();
   });
-  if (part.childPart !== null && part.childPart.alive) {
-    killPart(part.childPart);
+  if (part.childLeft !== null && part.childLeft.alive) {
+    killPart(part.childLeft);
+  }
+  if (part.childRight !== null && part.childRight.alive) {
+    killPart(part.childRight);
   }
 }
