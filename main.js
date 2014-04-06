@@ -78,9 +78,11 @@ function reset() {
   if (playerText !== null) {
     playerText.destroy(true);
   }
+  playerText = null;
   if (enemyText !== null) {
     enemyText.destroy(true);
   }
+  enemyText = null;
 }
 
 function update() {
@@ -140,17 +142,19 @@ function bulletHit(ship, bullet) {
     var loseText = "Pleased to try again";
 
     // Display winning texts
-    if (groups.enemy.countLiving() === 0) {
-      playerText = game.add.text(game.world.centerX, playerY, winText, winStyle);
-      enemyText = game.add.text(game.world.centerX, enemyY, loseText, loseStyle);
-    } else if (groups.player.countLiving() === 0) {
-      playerText = game.add.text(game.world.centerX, playerY, loseText, loseStyle);
-      enemyText = game.add.text(game.world.centerX, enemyY, winText, winStyle);
+    if (playerText === null || enemyText === null) {
+      if (groups.enemy.countLiving() === 0) {
+        playerText = game.add.text(game.world.centerX, playerY, winText, winStyle);
+        enemyText = game.add.text(game.world.centerX, enemyY, loseText, loseStyle);
+      } else if (groups.player.countLiving() === 0) {
+        playerText = game.add.text(game.world.centerX, playerY, loseText, loseStyle);
+        enemyText = game.add.text(game.world.centerX, enemyY, winText, winStyle);
+      }
+      playerText.anchor.x = 0.5;
+      playerText.anchor.y = 0.5;
+      enemyText.anchor.x = 0.5;
+      enemyText.anchor.y = 0.5;
     }
-    playerText.anchor.x = 0.5;
-    playerText.anchor.y = 0.5;
-    enemyText.anchor.x = 0.5;
-    enemyText.anchor.y = 0.5;
   }
 }
 

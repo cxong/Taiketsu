@@ -10,17 +10,15 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
     var shot = new Shot(game, group, bulletGroup, yscale, 1.3 / Math.sqrt(i));
     childLeft = NewShipPart(game, group, 'block', childLeft, true, shot, childLeft.x - childLeft.width / 2, 0, yscale);
     childLeft.x -= childLeft.width / 2;
-    childRight = NewShipPart(game, group, 'block', childRight, false, shot.clone(), childRight.x + childRight.width / 2, 0, yscale);
-    childRight.x += childRight.width / 2;
-    group.minDx = Math.min(group.minDx, childLeft.x);
-    group.maxDx = Math.max(group.maxDx, childRight.x);
+    childRight = NewShipPart(game, group, 'block', childRight, false, shot.clone(), childRight.x + Math.abs(childRight.width) / 2, 0, yscale);
+    childRight.x += Math.abs(childRight.width) / 2;
   }
   // Track left/right bounds
   group.minDx = 0;
   group.maxDx = 0;
   group.forEachAlive(function(part) {
-    group.minDx = Math.min(group.minDx, part.x - part.width * 0.5);
-    group.maxDx = Math.max(group.maxDx, part.x + part.width * 0.5);
+    group.minDx = Math.min(group.minDx, part.x - Math.abs(part.width) * 0.5);
+    group.maxDx = Math.max(group.maxDx, part.x + Math.abs(part.width) * 0.5);
   });
   
   var speedBase = 5;
@@ -113,6 +111,7 @@ function NewShipPart(game, group, name, parent, isLeft, shot, x, y, yscale) {
       parent.childLeft = part;
     } else {
       parent.childRight = part;
+      part.width *= -1;
     }
   }
   // Recursively add health
