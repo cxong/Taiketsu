@@ -66,6 +66,8 @@ function reset() {
   // Add players
   groups.enemy.removeAll();
   groups.player.removeAll();
+  groups.playerBullets.removeAll();
+  groups.enemyBullets.removeAll();
   NewShip(game, groups.enemy, groups.enemyBullets, windowSize.x / 2, enemyY, -1);
   NewShip(game, groups.player, groups.playerBullets, windowSize.x / 2, playerY, 1);
   groups.enemy.otherShip = groups.player;
@@ -145,7 +147,9 @@ function bulletHit(ship, bullet) {
       enemyText = game.add.text(game.world.centerX, enemyY, winText, winStyle);
     }
     playerText.anchor.x = 0.5;
+    playerText.anchor.y = 0.5;
     enemyText.anchor.x = 0.5;
+    enemyText.anchor.y = 0.5;
   }
 }
 
@@ -169,6 +173,10 @@ function killPart(part) {
   part.group.forEachAlive(function(part) {
     part.group.minDx = Math.min(part.group.minDx, part.x - part.width * 0.5);
     part.group.maxDx = Math.max(part.group.maxDx, part.x + part.width * 0.5);
+  });
+  // Scale up DPS of remaining parts
+  part.group.forEachAlive(function(p) {
+    p.shot.scaleUpDPS();
   });
   if (part.childPart !== null && part.childPart.alive) {
     killPart(part.childPart);

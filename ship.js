@@ -172,9 +172,22 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
   this.gunLocks.push(burstEndLock);
   this.gunLock = Math.random() * 50 + 60;
   this.gunLockIndex = 0;
-  this.shotSpeed = (Math.random() * 150 + 250) * powerScale;
+  this.shotSpeed = (Math.random() * 130 + 230) * powerScale;
   this.spreadCount = Math.floor(Math.random() * 2 * powerScale + 1);
   this.spreadWidth = Math.random() * 10 + 5;
+  
+  // Now calculate DPS and scale gun lock so DPS is equal
+  var dps = 0;
+  var i;
+  for (i = 0; i < this.gunLocks.length; i++) {
+    dps += this.spreadCount / this.gunLocks[i];
+  }
+  var standardDps = 0.15;
+  var dpsScale = dps / standardDps;
+  for (i = 0; i < this.gunLocks.length; i++) {
+    this.gunLocks[i] *= dpsScale;
+  }
+  
   this.shoot = function(part) {
     this.gunLock--;
     if (this.gunLock <= 0) {
@@ -194,6 +207,15 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
         this.gunLockIndex = 0;
       }
     }
+  };
+  
+  this.scaleUpDPS = function() {
+    var scaleFactor = 0.85;
+    var i;
+    for (i = 0; i < this.gunLocks.length; i++) {
+      this.gunLocks[i] *= scaleFactor;
+    }
+    this.shotSpeed *= 1.1;
   };
   
   this.clone = function() {
