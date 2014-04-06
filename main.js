@@ -20,7 +20,6 @@ var cursors;
 
 
 function preload () {
-  game.load.image('bgimage', 'images/bg.jpg');
   game.load.spritesheet('cockpit', 'images/cockpit.png', 38, 52);
   game.load.spritesheet('block0', 'images/block0.png', 11, 33);
   game.load.spritesheet('block1', 'images/block1.png', 38, 48);
@@ -57,11 +56,16 @@ function preload () {
   game.load.image('flash2', 'images/flash2.png');
   game.load.image('flash3', 'images/flash3.png');
   game.numFlashes = 4;
+  //stars
+  game.load.image('star0', 'images/star0.png');
+  game.load.image('star1', 'images/star1.png');
+  game.load.image('star2', 'images/star2.png');
+  game.load.image('star3', 'images/star3.png');
+  game.numStars = 4;
   game.load.spritesheet('explosion', 'images/explosion.png', 34, 34);
   
   //game.load.audio('bgaudio', 'audio/bg.mp3');
   
-  //game.load.audio('collect', 'audio/collect.mp3');
   game.load.audio('explode', 'audio/explode.wav');
   game.load.audio('shot', 'audio/shot.wav');
   game.load.audio('hit', 'audio/hit.wav');
@@ -70,15 +74,14 @@ function preload () {
 }
 
 function create () {
-  game.stage.backgroundColor = '0x000022';
-
-  bg = game.add.sprite(0, 0, 'bgimage');
+  game.stage.backgroundColor = '0x002000';
   
   //music = game.add.audio('bgaudio');
   //music.play('', 0, 0.3, true);
   explodeSound = game.add.audio('explode');
   
   groups = {
+    stars: game.add.group(),
     player: game.add.group(),
     enemy: game.add.group(),
     playerBullets: game.add.group(),
@@ -117,6 +120,7 @@ function reset() {
   enemyText = null;
 }
 
+var starCounter = 0;
 function update() {
   if (gameState === 'play') {
     // move player
@@ -151,6 +155,19 @@ function update() {
       }
     }
   }
+  
+  // Automatically add stars into the scene
+  if (starCounter === 0) {
+    starCounter = 5;
+    var star = game.add.sprite(Math.random() * game.world.bounds.width, 0,
+                               'star' + Math.floor(Math.random() * game.numStars));
+    groups.stars.add(star);
+    star.body.velocity.y = Math.random() * 300 + 200;
+    star.lifespan = 10000;
+    star.checkWorldBounds = true;
+    star.outOfBoundsKill = true;
+  }
+  starCounter--;
 }
 
 function bulletHit(ship, bullet) {
