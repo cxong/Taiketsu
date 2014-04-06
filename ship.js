@@ -1,17 +1,45 @@
 function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   group.x = x;
   group.y = y;
-  var ship = NewShipPart(game, group, 'cockpit', null, false, new Shot(game, group, bulletGroup, yscale, 1.5), 0, 0, yscale);
+  var shot = new Shot(game, group, bulletGroup, yscale, 2.0);
+  shot.scaleUpDPS(30);
+  var ship = NewShipPart(game, group, 'cockpit', null, false, shot,
+                         0, 0, yscale);
   // Add more ship parts
   var i;
   var childLeft = ship;
   var childRight = ship;
-  for (i = 1; i < 5; i++) {
-    var shot = new Shot(game, group, bulletGroup, yscale, 1.3 / Math.sqrt(i));
-    childLeft = NewShipPart(game, group, 'block', childLeft, true, shot, childLeft.x - childLeft.width / 2, 0, yscale);
+  var lastDy = game.blocks.cockpit.deltaNext * yscale * -1;
+  var powerBudget = 5;
+  var wasLastNonWeapon = false;
+  for (i = 1; powerBudget > 0; i++) {
+    // Scale shot power down by distance from center, and up by part size
+    var spritename = null;
+    while (spritename === null) {
+      // if we used a non-weapon part last, we need to use a weapon part
+      spritename = 'block' + Math.floor(Math.random() * game.numBlocks);
+      if (wasLastNonWeapon && !game.blocks[spritename].isWeapon) {
+        spritename = null;
+      }
+    }
+    var shotPower = 1.0 / Math.sqrt(i) * game.cache.getImage(spritename).width / 30;
+    if (!game.blocks[spritename].isWeapon) {
+      shotPower = 0;
+      wasLastNonWeapon = true;
+    }
+    powerBudget -= shotPower;
+    shot = new Shot(game, group, bulletGroup, yscale, shotPower);
+    childLeft = NewShipPart(game, group, spritename, childLeft, true, shot,
+                            childLeft.x - childLeft.width / 2,
+                            childLeft.y + lastDy, yscale);
     childLeft.x -= childLeft.width / 2;
-    childRight = NewShipPart(game, group, 'block', childRight, false, shot.clone(), childRight.x + Math.abs(childRight.width) / 2, 0, yscale);
+    childLeft.y += game.blocks[spritename].delta * yscale * -1;
+    childRight = NewShipPart(game, group, spritename, childRight, false, shot.clone(),
+                             childRight.x + Math.abs(childRight.width) / 2,
+                             childRight.y + lastDy, yscale);
     childRight.x += Math.abs(childRight.width) / 2;
+    childRight.y += game.blocks[spritename].delta * yscale * -1;
+    lastDy = game.blocks[spritename].deltaNext * yscale * -1;
   }
   // Track left/right bounds
   group.minDx = 0;
@@ -171,34 +199,41 @@ function NewShipPart(game, group, name, parent, isLeft, shot, x, y, yscale) {
 
 var Shot = function(game, group, bulletGroup, yscale, powerScale) {
   var shot = game.add.audio('shot');
-  // Randomly generate a set of gun locks
-  var burstSize = Math.floor(Math.random() * 2 * powerScale) + 1;
-  var burstLock = Math.floor((Math.random() * 20 + 4) / powerScale);
-  var burstEndLock = Math.floor((Math.random() * 60 + 5 + burstLock) / powerScale);
   this.gunLocks = [];
-  for (; burstSize > 0; burstSize--) {
-    this.gunLocks.push(burstLock);
-  }
-  this.gunLocks.push(burstEndLock);
   this.gunLock = Math.random() * 50 + 60;
   this.gunLockIndex = 0;
-  this.shotSpeed = (Math.random() * 130 + 230) * powerScale;
-  this.spreadCount = Math.floor(Math.random() * 2 * powerScale + 1);
-  this.spreadWidth = Math.random() * 10 + 5;
+  this.spreadCount = 0;
+  if (powerScale > 0) {
+    // Randomly generate a set of gun locks
+    var burstSize = Math.floor(Math.random() * 2 * powerScale) + 1;
+    var burstLock = Math.floor((Math.random() * 20 + 4) / powerScale);
+    var burstEndLock = Math.floor((Math.random() * 60 + 5 + burstLock) / powerScale);
+    this.gunLocks = [];
+    for (; burstSize > 0; burstSize--) {
+      this.gunLocks.push(burstLock);
+    }
+    this.gunLocks.push(burstEndLock);
+    this.shotSpeed = (Math.random() * 150 + 250) * Math.sqrt(powerScale);
+    this.spreadCount = Math.floor(Math.random() * 2 * powerScale + 1);
+    this.spreadWidth = Math.random() * 10 + 5;
   
-  // Now calculate DPS and scale gun lock so DPS is equal
-  var dps = 0;
-  var i;
-  for (i = 0; i < this.gunLocks.length; i++) {
-    dps += this.spreadCount / this.gunLocks[i];
-  }
-  var standardDps = 0.15;
-  var dpsScale = dps / standardDps;
-  for (i = 0; i < this.gunLocks.length; i++) {
-    this.gunLocks[i] *= dpsScale;
+    // Now calculate DPS and scale gun lock so DPS is equal
+    var dps = 0;
+    var i;
+    for (i = 0; i < this.gunLocks.length; i++) {
+      dps += this.spreadCount / this.gunLocks[i];
+    }
+    var standardDps = 0.07;
+    var dpsScale = dps / standardDps;
+    for (i = 0; i < this.gunLocks.length; i++) {
+      this.gunLocks[i] *= dpsScale;
+    }
   }
   
   this.shoot = function(part) {
+    if (powerScale === 0) {
+      return;
+    }
     this.gunLock--;
     if (this.gunLock <= 0) {
       shot.play();
@@ -219,13 +254,13 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
     }
   };
   
-  this.scaleUpDPS = function() {
-    var scaleFactor = 0.85;
+  this.scaleUpDPS = function(scale) {
+    var scaleFactor = Math.pow(0.8, scale / 25);
     var i;
     for (i = 0; i < this.gunLocks.length; i++) {
       this.gunLocks[i] *= scaleFactor;
     }
-    this.shotSpeed *= 1.1;
+    this.shotSpeed *= 1.05;
   };
   
   this.clone = function() {

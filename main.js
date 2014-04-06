@@ -22,7 +22,25 @@ var cursors;
 function preload () {
   game.load.image('bgimage', 'images/bg.jpg');
   game.load.spritesheet('cockpit', 'images/cockpit.png', 38, 52);
-  game.load.spritesheet('block', 'images/block.png', 11, 33);
+  game.load.spritesheet('block0', 'images/block0.png', 11, 33);
+  game.load.spritesheet('block1', 'images/block1.png', 38, 48);
+  game.load.spritesheet('block2', 'images/block2.png', 16, 76);
+  game.load.spritesheet('block3', 'images/block3.png', 29, 52);
+  game.load.spritesheet('block4', 'images/block4.png', 22, 31);
+  game.load.spritesheet('block5', 'images/block5.png', 10, 20);
+  game.load.spritesheet('block6', 'images/block6.png', 26, 44);
+  game.numBlocks = 7;
+  // dictionary of blocks and delta for attachment, plus whether weapons are allowed
+  game.blocks = {
+    cockpit: { delta: 0, deltaNext: 8, isWeapon: true },
+    block0: { delta: 0, deltaNext: 0, isWeapon: true },
+    block1: { delta: -4, deltaNext: 4, isWeapon: true },
+    block2: { delta: 29, deltaNext: 9, isWeapon: true },
+    block3: { delta: 5, deltaNext: -6, isWeapon: false },
+    block4: { delta: 4, deltaNext: -4, isWeapon: false },
+    block5: { delta: 3, deltaNext: 3, isWeapon: true },
+    block6: { delta: 8, deltaNext: 11, isWeapon: true }
+  };
   game.load.image('bullet', 'images/bullet.png');
   game.load.image('bullet1', 'images/bullet1.png');
   game.load.spritesheet('explosion', 'images/explosion.png', 34, 34);
@@ -176,17 +194,25 @@ function killPart(part) {
   part.group.minDx = 0;
   part.group.maxDx = 0;
   part.group.forEachAlive(function(part) {
-    part.group.minDx = Math.min(part.group.minDx, part.x - part.width * 0.5);
-    part.group.maxDx = Math.max(part.group.maxDx, part.x + part.width * 0.5);
+    part.group.minDx = Math.min(part.group.minDx, part.x - Math.abs(part.width) * 0.5);
+    part.group.maxDx = Math.max(part.group.maxDx, part.x + Math.abs(part.width) * 0.5);
   });
   // Scale up DPS of remaining parts
   part.group.forEachAlive(function(p) {
-    p.shot.scaleUpDPS();
+    p.shot.scaleUpDPS(Math.abs(part.width));
   });
   if (part.childLeft !== null && part.childLeft.alive) {
     killPart(part.childLeft);
   }
   if (part.childRight !== null && part.childRight.alive) {
     killPart(part.childRight);
+  }
+  // If final part left, power up more
+  if (part.group.countLiving() === 1) {
+    var cockpit = part.group.getFirstAlive();
+    cockpit.shot.scaleUpDPS(60);
+    // Reduce hit box too
+    cockpit.body.width *= 0.5;
+    cockpit.body.height *= 0.5;
   }
 }
