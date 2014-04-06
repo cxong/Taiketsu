@@ -224,7 +224,7 @@ function killPart(part) {
   // If final part left, power up more
   if (part.group.countLiving() === 1) {
     var cockpit = part.group.getFirstAlive();
-    cockpit.shot.scaleUpDPS(60);
+    cockpit.shot.scaleUpDPS(150);
     // Reduce hit box too
     cockpit.body.width *= 0.5;
     cockpit.body.height *= 0.5;

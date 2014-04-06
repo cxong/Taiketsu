@@ -2,7 +2,7 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
   group.x = x;
   group.y = y;
   var shot = new Shot(game, group, bulletGroup, yscale, 2.0);
-  shot.scaleUpDPS(30);
+  shot.scaleUpDPS(150);
   var ship = NewShipPart(game, group, 'cockpit' + (yscale < 0 ? 'a' : ''), null, false, shot,
                          0, 0, yscale);
   // Add more ship parts
@@ -271,7 +271,7 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
   };
   
   this.scaleUpDPS = function(scale) {
-    var scaleFactor = Math.pow(0.8, scale / 25);
+    var scaleFactor = Math.pow(0.8, scale / 35);
     var i;
     for (i = 0; i < this.gunLocks.length; i++) {
       this.gunLocks[i] *= scaleFactor;
