@@ -1,5 +1,4 @@
 var windowSize = { x: 480, y: 800 };
-var game = new Phaser.Game(windowSize.x, windowSize.y, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 var bg;
 var gameState = 'play';
 var stateCounter = 0;
@@ -138,8 +137,8 @@ function update() {
     
     // Collision
     if (game.time.time - game.time.start > 1000) {
-      game.physics.overlap(groups.enemy, groups.playerBullets, bulletHit);
-      game.physics.overlap(groups.player, groups.enemyBullets, bulletHit);
+      game.physics.arcade.overlap(groups.enemy, groups.playerBullets, bulletHit);
+      game.physics.arcade.overlap(groups.player, groups.enemyBullets, bulletHit);
     }
     
     groups.player.fireAndAI();
@@ -159,8 +158,11 @@ function update() {
   // Automatically add stars into the scene
   if (starCounter === 0) {
     starCounter = 5;
-    var star = game.add.sprite(Math.random() * game.world.bounds.width, 0,
-                               'star' + Math.floor(Math.random() * game.numStars));
+    var star = game.add.sprite(
+      Math.random() * game.world.bounds.width, 0,
+      'star' + Math.floor(Math.random() * game.numStars)
+    );
+    game.physics.arcade.enable(star);
     groups.stars.add(star);
     star.body.velocity.y = Math.random() * 300 + 200;
     star.lifespan = 10000;
@@ -212,7 +214,9 @@ function killPart(part) {
   explodeSound.play();
   for (var i = 0; i < 5; i++) {
     var explode = game.add.sprite(
-      part.x + part.group.x, part.y + part.group.y, 'explosion');
+      part.x + part.group.x, part.y + part.group.y, 'explosion'
+    );
+    game.physics.arcade.enable(explode);
     explode.anchor.x = 0.5;
     explode.anchor.y = 0.5;
     explode.body.velocity.x = (Math.random() - 0.5)*part.width*3;
@@ -247,3 +251,33 @@ function killPart(part) {
     cockpit.body.height *= 0.5;
   }
 }
+
+var Boot = function (game) {
+};
+
+Boot.prototype = {
+    create: function () {
+        this.game.stage.backgroundColor = 0x000000;
+        this.input.maxPointers = 1;
+        this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        this.game.physics.startSystem(Phaser.Physics.ARCADE);
+
+        this.state.start('game');
+    }
+};
+
+var GameState = function(game){};
+
+GameState.prototype.preload = preload;
+GameState.prototype.create = create;
+GameState.prototype.update = update;
+
+var game;
+window.onload = function() { setTimeout(function () {
+  game = new Phaser.Game(
+    windowSize.x, windowSize.y, Phaser.AUTO, 'gameContainer', null, false, false
+  );
+  game.state.add('boot', Boot);
+  game.state.add('game', GameState);
+  game.state.start('boot');
+}, 1000); };

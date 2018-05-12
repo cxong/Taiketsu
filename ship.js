@@ -39,7 +39,7 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
                              childRight.y + lastDy, yscale);
     childRight.x += Math.abs(childRight.width) / 2;
     childRight.y += game.blocks[spritename].delta * yscale * -1;
-    lastDy = game.blocks[spritename].deltaNext * yscale * -1;
+    lastDy = game.blocks[spritename].deltaNext * yscale * -0.7;
   }
   // Track left/right bounds
   group.minDx = 0;
@@ -125,12 +125,14 @@ function NewShip(game, group, bulletGroup, x, y, yscale, otherShip) {
 
 function NewShipPart(game, group, name, parent, isLeft, shot, x, y, yscale) {
   var part = game.add.sprite(x, y, name);
+  game.physics.arcade.enable(part);
   part.anchor.x = 0.5;
   part.anchor.y = 0.5;
   part.height *= yscale;
   group.add(part);
   
   // Parent/child
+  part.group = group;
   part.parentPart = parent;
   part.childLeft = null;
   part.childRight = null;
@@ -290,6 +292,7 @@ var Shot = function(game, group, bulletGroup, yscale, powerScale) {
 
 function NewBullet(game, x, y, yscale, angle, speed) {
   var bullet = game.add.sprite(x, y, yscale < 0 ? 'bullet1' : 'bullet');
+  game.physics.arcade.enable(bullet);
   bullet.anchor.x = 0.5;
   bullet.anchor.y = 0.5;
   bullet.body.width = 5;
